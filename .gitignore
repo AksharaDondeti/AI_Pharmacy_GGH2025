@@ -1,0 +1,30 @@
+# Virtual environment
+venv*/
+venv88/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Config and API keys (Sensitive Data)
+db_config.json
+groq_config.json
+
+# Dataset and backup model files
+*.pt
+*.csv
+
+# Temporary files and logs
+temp/
+*.log
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# VS Code settings (if not needed)
+.vscode/
+
+# Exclude specific file
+ocr.py

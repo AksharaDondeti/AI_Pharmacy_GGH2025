@@ -1,0 +1,10 @@
+torch
+torchvision
+transformers
+Pillow
+opencv-python
+datasets
+streamlit
+pyscogp2
+requests
+groq
