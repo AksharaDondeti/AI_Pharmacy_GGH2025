@@ -24,17 +24,13 @@ Ensure you have the following installed:
    ```sh
    git clone https://github.com/AksharaDondeti/AI_Pharmacy_GGH2025.git
    cd AI_Pharmacy_GGH2025
-   ```
-2. Checkout to the `master` branch for data:
-   ```sh
-   git checkout master
-   ```
-3. Install dependencies:
+   
+2. Install dependencies:
    ```sh
    pip install -r requirements.txt
    ```
-4. Configure database settings in `db_config.json`.
-5. Run the Streamlit application:
+3. Configure database settings in `db_config.json`.
+4. Run the Streamlit application:
    ```sh
    streamlit run app.py
    ```
