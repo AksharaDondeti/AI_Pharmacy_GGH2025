@@ -40,7 +40,7 @@ Ensure you have the following installed:
    - Ensure that the application loads these environment variables before execution.  
 5. Run the Streamlit application:  
    ```sh
-   streamlit run app.py
+   streamlit run basic.py
    ```  
 
 ## Design Idea and Approach  
