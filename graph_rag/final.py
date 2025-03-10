@@ -3,16 +3,12 @@ import pytesseract
 import psycopg2
 import json
 import re
-import requests
+import ollama
 from PIL import Image
 
 # Load Configuration
 with open("db_config.json", "r") as file:
     DB_CONFIG = json.load(file)
-
-with open("groq_config.json", "r") as file:
-    GROQ_CONFIG = json.load(file)
-
 
 def extract_drug_names(text):
     """
@@ -71,39 +67,19 @@ def get_drug_information(drug_name):
             conn.close()
 
 
-def ask_groq_api(drug_name):
+def ask_medllama(drug_name):
     """
-    Queries the Groq API for additional drug information.
+    Queries MedLlama2 using Ollama for additional drug information.
     """
-    api_key = GROQ_CONFIG.get("api_key")
-    api_url = GROQ_CONFIG.get("api_url")
-
-    if not api_key or not api_url:
-        return {"Error": "Groq API configuration is missing."}
-
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-
-    data = {
-        "model": "llama-3.3-70b-versatile",
-        "messages": [{"role": "user", "content": f"Provide medical details about {drug_name}."}],
-        "max_tokens": 300,
-    }
-
     try:
-        response = requests.post(api_url, headers=headers, json=data)
-        response_data = response.json()
-
-        return (
-            response_data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
-            if response.status_code == 200
-            else {"Error": f"Groq API Error: {response_data}"}
+        response = ollama.chat(
+            model="medllama2",
+            messages=[{"role": "user", "content": f"Provide medical details about {drug_name}."}]
         )
+        return response['message']['content'].strip() if 'message' in response else {"Error": "No response from MedLlama"}
 
-    except requests.RequestException as e:
-        return {"Error": f"Request failed: {str(e)}"}
+    except Exception as e:
+        return {"Error": f"Model query failed: {str(e)}"}
 
 
 def process_prescription(image):
@@ -122,14 +98,14 @@ def process_prescription(image):
         # Fetch details for each drug
         drug_info_list = [get_drug_information(drug) for drug in drug_names]
 
-        # Query Groq API only for drugs not found in the database
-        groq_responses = {
-            drug["Drug"]: ask_groq_api(drug["Drug"])
+        # Query MedLlama for drugs not found in the database
+        medllama_responses = {
+            drug["Drug"]: ask_medllama(drug["Drug"])
             for drug in drug_info_list
             if "Message" in drug and "No database record found." in drug["Message"]
         }
 
-        return {"Groq_Responses": groq_responses}
+        return {"MedLlama_Responses": medllama_responses}
 
     except Exception as e:
         return {"Error": f"Error processing image: {str(e)}"}
@@ -150,9 +126,9 @@ if uploaded_file is not None:
 
         if "Error" in result:
             st.error(result["Error"])
-        elif "Groq_Responses" in result and result["Groq_Responses"]:
-            st.subheader("Additional Drug Information from Groq API")
-            for drug, details in result["Groq_Responses"].items():
-                st.info(f" {details}")
+        elif "MedLlama_Responses" in result and result["MedLlama_Responses"]:
+            st.subheader("Additional Drug Information from MedLlama2")
+            for drug, details in result["MedLlama_Responses"].items():
+                st.info(f"**{drug}**: {details}")
     except Exception as e:
         st.error(f"Error processing image: {str(e)}")
